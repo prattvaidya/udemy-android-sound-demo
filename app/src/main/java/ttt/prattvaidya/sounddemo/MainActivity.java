@@ -9,10 +9,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class MainActivity extends AppCompatActivity {
 
     MediaPlayer mediaPlayer;
     AudioManager audioManager;
+    SeekBar progressControl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
         int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         int currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
         mediaPlayer = MediaPlayer.create(this, R.raw.piano);
+
+//        Adjust volume
         SeekBar volumeControl = (SeekBar) findViewById(R.id.seekBar);
         volumeControl.setMax(maxVolume);
         volumeControl.setProgress((currentVolume));
@@ -42,10 +48,39 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+//        Adjust player progress
+        progressControl = (SeekBar) findViewById(R.id.progressSeekBar);
+        progressControl.setMax(mediaPlayer.getDuration());
+        progressControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                Log.i("Progress changed", Integer.toString(progress));
+                mediaPlayer.seekTo(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+
     }
 
     public void play(View view) {
         mediaPlayer.start();
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                progressControl.setProgress(mediaPlayer.getCurrentPosition());
+            }
+        }, 0,1000);
     }
 
     public void pause(View view) {
